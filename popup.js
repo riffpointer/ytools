@@ -204,9 +204,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        let safeChannelName = 'unknown_channel';
+        if (currentVideos.length > 0 && currentVideos[0].channel && currentVideos[0].channel !== 'Unknown Channel') {
+            safeChannelName = currentVideos[0].channel.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+        const filename = `ytools_videos_${safeChannelName}_${timestamp}.csv`;
+        
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', 'ytools_videos.csv');
+        link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -219,6 +226,25 @@ document.addEventListener('DOMContentLoaded', () => {
             exportCsvBtn.textContent = originalText;
             exportCsvBtn.classList.remove('copied');
         }, 1500);
+    });
+
+    // Tab switching logic
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.getAttribute('data-tab');
+            
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            btn.classList.add('active');
+            const targetContent = document.getElementById(`tab-${targetTab}`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
     });
 
     // Initialize

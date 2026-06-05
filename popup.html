@@ -39,6 +39,7 @@
       <div id="tab-scanner" class="tab-content active">
         <div class="action-bar">
           <button id="btn-scan" class="btn btn-primary">START SCANNING</button>
+          <button id="btn-settings" class="btn btn-icon" title="CSV Settings">&#9881;</button>
           <button id="btn-clear" class="btn btn-secondary">CLEAR</button>
         </div>
 
@@ -67,6 +68,27 @@
             Designed with flat two-tone dark gray aesthetics and Inter typography.<br><br>
             Developed by RiffPointer.
           </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Dialog -->
+    <div id="settings-dialog" class="dialog-overlay hidden">
+      <div class="dialog">
+        <div class="dialog-header">
+          <h3 class="dialog-title">CSV EXPORT COLUMNS</h3>
+          <button id="btn-close-settings" class="btn-close">&times;</button>
+        </div>
+        <div class="dialog-body">
+          <div class="setting-group">
+            <label class="checkbox-label"><input type="checkbox" id="col-videoId" checked> Video ID</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-title" checked> Title</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-channel" checked> Channel</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-duration" checked> Duration</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-views" checked> Views</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-uploadDate" checked> Upload Date</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-url" checked> URL</label>
+          </div>
         </div>
       </div>
     </div>

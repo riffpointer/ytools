@@ -85,6 +85,21 @@ if (!window.ytoolsLoaded) {
         return /^\s*\d{1,2}(:\d{2})+\s*$/.test(str);
       };
 
+      // Global channel name fallback (only valid if we are on a channel page)
+      let globalChannelName = '';
+      const isChannelPage = window.location.pathname.startsWith('/@') || window.location.pathname.startsWith('/channel/') || window.location.pathname.startsWith('/user/') || window.location.pathname.startsWith('/c/');
+      
+      try {
+        if (isChannelPage) {
+          const globalChannelEl = document.querySelector('#page-header ytd-channel-name .yt-core-attributed-string, #page-header ytd-channel-name yt-formatted-string, #channel-name yt-formatted-string');
+          if (globalChannelEl) globalChannelName = safeString(globalChannelEl.textContent).trim();
+          if (!globalChannelName && document.title.includes('- YouTube')) {
+            const titleMatch = document.title.match(/^(.*?)\s*-\s*YouTube$/);
+            if (titleMatch) globalChannelName = titleMatch[1].trim();
+          }
+        }
+      } catch (e) {}
+
       // 2. Process each URL group to intelligently deduce the best title, duration, and additional metadata
       urlGroups.forEach((anchors, url) => {
         let bestTitle = '';
@@ -93,6 +108,7 @@ if (!window.ytoolsLoaded) {
         let views = '';
         let uploadDate = '';
         let videoId = '';
+        let ariaLabelFull = '';
         
         try {
           const urlObj = new URL(url);
@@ -113,7 +129,13 @@ if (!window.ytoolsLoaded) {
           // Harvest all possible text data from the anchor and its attributes
           const tText = safeString(a.textContent).replace(/\s+/g, ' ').trim();
           const tTitle = safeString(a.getAttribute('title')).replace(/\s+/g, ' ').trim();
-          const tAria = cleanAriaLabel(a.getAttribute('aria-label')).replace(/\s+/g, ' ').trim();
+          
+          const rawAria = safeString(a.getAttribute('aria-label'));
+          if (rawAria && rawAria.length > ariaLabelFull.length) {
+            ariaLabelFull = rawAria; // Keep longest aria-label for regex extraction
+          }
+
+          const tAria = cleanAriaLabel(rawAria).replace(/\s+/g, ' ').trim();
 
           if (tText) candidates.add(tText);
           if (tTitle) {
@@ -161,36 +183,71 @@ if (!window.ytoolsLoaded) {
 
             // Channel Name extraction
             if (!channelName) {
-              const channelLink = container.querySelector('ytd-channel-name a, #channel-name a, a[href*="/@"], a[href*="/channel/"], a[href*="/user/"]');
-              if (channelLink) {
-                channelName = safeString(channelLink.textContent).replace(/\s+/g, ' ').trim();
+              const channelLinks = container.querySelectorAll('ytd-channel-name a, #channel-name a, a[href*="/@"], a[href*="/channel/"], a[href*="/user/"]');
+              for (const link of channelLinks) {
+                const txt = safeString(link.textContent).replace(/\s+/g, ' ').trim();
+                // We ensure it has text, and avoid picking up single-character noise
+                if (txt && txt.length > 1) {
+                  channelName = txt;
+                  break;
+                }
               }
             }
 
-            // Views & Upload Date extraction
+            // Views & Upload Date extraction via innerText blocks
             if (!views || !uploadDate) {
-              const metadataSpans = container.querySelectorAll('#metadata-line span, .metadata-line span, ytd-video-meta-block span');
-              const metaTexts = Array.from(metadataSpans).map(span => safeString(span.textContent).trim()).filter(Boolean);
-              
-              metaTexts.forEach(txt => {
-                const lowerTxt = txt.toLowerCase();
-                if (lowerTxt.includes('view') || lowerTxt.includes('观看') || lowerTxt.includes('vista') || lowerTxt.includes('aufruf') || lowerTxt.includes('vue') || lowerTxt.includes('visualiza')) {
-                  views = txt;
-                } else if (lowerTxt.includes('ago') || lowerTxt.includes('前') || lowerTxt.includes('hace') || lowerTxt.includes('vor') || lowerTxt.includes('il y a') || lowerTxt.includes('atrás') || lowerTxt.includes('streamed') || lowerTxt.includes('直播')) {
-                  uploadDate = txt;
-                }
-              });
+              const metadataLine = container.querySelector('#metadata-line, ytd-video-meta-block');
+              if (metadataLine) {
+                const textContent = metadataLine.innerText || metadataLine.textContent || '';
+                const parts = textContent.split(/[\n•]/).map(t => t.trim()).filter(Boolean);
+                
+                parts.forEach(txt => {
+                  const lowerTxt = txt.toLowerCase();
+                  if (lowerTxt.includes('view') || lowerTxt.includes('观看') || lowerTxt.includes('vista') || lowerTxt.includes('aufruf') || lowerTxt.includes('vue') || lowerTxt.includes('visualiza')) {
+                    views = txt;
+                  } else if (lowerTxt.includes('ago') || lowerTxt.includes('前') || lowerTxt.includes('hace') || lowerTxt.includes('vor') || lowerTxt.includes('il y a') || lowerTxt.includes('atrás') || lowerTxt.includes('streamed') || lowerTxt.includes('直播')) {
+                    uploadDate = txt;
+                  }
+                });
 
-              // Hard fallback based on positions if keyword parsing was unsuccessful
-              if (metaTexts.length > 0 && !views) {
-                views = metaTexts[0];
+                if (parts.length > 0 && !views) views = parts[0];
+                if (parts.length > 1 && !uploadDate) uploadDate = parts[1];
               }
-              if (metaTexts.length > 1 && !uploadDate) {
-                uploadDate = metaTexts[1];
+            }
+
+            // Hyper-aggressive fallback: look at EVERY text node in the container
+            if (!views || !uploadDate) {
+              const allElements = Array.from(container.querySelectorAll('*'));
+              for (const el of allElements) {
+                // only check leaf nodes
+                if (el.children.length === 0 && el.textContent) {
+                  const txt = safeString(el.textContent).replace(/\s+/g, ' ').trim();
+                  if (!txt) continue;
+                  const lowerTxt = txt.toLowerCase();
+                  
+                  if (!views && /\d.*\s*(views?|vistas|aufrufe?|vues?|visualiza|观看)/i.test(lowerTxt)) {
+                    views = txt;
+                  }
+                  if (!uploadDate && /\d.*\s*(ago|hace|vor|il y a|atrás|前)/i.test(lowerTxt)) {
+                    uploadDate = txt;
+                  }
+                }
               }
             }
           }
         });
+
+        // 2b. Ultimate Fallbacks
+        if (!channelName) channelName = globalChannelName;
+
+        if (!views && ariaLabelFull) {
+          const viewMatch = ariaLabelFull.match(/(\d+(?:,\d+)*(?:\.\d+)?[KMBkmb]?\s*(?:views?|vistas|Aufrufe?|vues?|visualiza|观看))/i);
+          if (viewMatch) views = viewMatch[1];
+        }
+        if (!uploadDate && ariaLabelFull) {
+          const dateMatch = ariaLabelFull.match(/(\d+\s+(?:years?|months?|weeks?|days?|hours?|minutes?|seconds?)\s+(?:ago|hace|vor|il y a|atrás|前))/i);
+          if (dateMatch) uploadDate = dateMatch[1];
+        }
 
         // 3. Score and select the actual video title from the harvested strings
         const validCandidates = Array.from(candidates).filter(c => {
