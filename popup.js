@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isScanning) {
                 videoList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-icon">⏳</div>
+                        <div class="empty-icon"><i class="bi bi-hourglass-split"></i></div>
                         <div class="empty-title">SCANNING PAGE</div>
                         <div class="empty-desc">Extracting video titles, links, and durations. Please wait...</div>
                     </div>
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 videoList.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-icon">📺</div>
+                        <div class="empty-icon"><i class="bi bi-tv"></i></div>
                         <div class="empty-title">NO VIDEOS FOUND</div>
                         <div class="empty-desc">Navigate to a YouTube channel, playlist, or search page and click "START SCANNING".</div>
                     </div>
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="video-title">${video.title || 'Unknown Title'}</div>
                         <div class="video-meta">
                             <span class="video-index">#${index + 1}</span>
-                            <a href="${video.url}" class="video-link-icon" target="_blank" title="${video.url}">&#128279; Link</a>
+                            <a href="${video.url}" class="video-link-icon" target="_blank" title="${video.url}"><i class="bi bi-link-45deg"></i> Link</a>
                         </div>
                     </div>
                     <div class="video-card-right">
                         <span class="video-duration">${video.duration || '--:--'}</span>
-                        <button class="btn-copy-card" data-url="${video.url}">COPY</button>
+                        <button class="btn-copy-card" data-url="${video.url}"><i class="bi bi-clipboard"></i></button>
                     </div>
                 `;
                 videoList.appendChild(card);
@@ -180,6 +180,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Settings Dialog Logic
+    const settingsBtn = document.getElementById('btn-settings');
+    const closeSettingsBtn = document.getElementById('btn-close-settings');
+    const settingsDialog = document.getElementById('settings-dialog');
+    
+    settingsBtn.addEventListener('click', () => {
+        settingsDialog.classList.remove('hidden');
+    });
+    
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsDialog.classList.add('hidden');
+    });
+    
+    settingsDialog.addEventListener('click', (e) => {
+        if (e.target === settingsDialog) {
+            settingsDialog.classList.add('hidden');
+        }
+    });
+
     exportCsvBtn.addEventListener('click', () => {
         if (currentVideos.length === 0) return;
         
@@ -189,16 +208,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return `"${String(str).replace(/"/g, '""')}"`;
         };
 
-        const headers = ['Video ID', 'Title', 'Channel', 'Duration', 'Views', 'Upload Date', 'URL'];
-        const rows = currentVideos.map(v => [
-            escapeCSV(v.videoId || 'N/A'),
-            escapeCSV(v.title || ''),
-            escapeCSV(v.channel || 'Unknown'),
-            escapeCSV(v.duration || '--:--'),
-            escapeCSV(v.views || 'N/A'),
-            escapeCSV(v.uploadDate || 'N/A'),
-            escapeCSV(v.url || '')
-        ]);
+        const colConfig = [
+            { id: 'col-videoId', name: 'Video ID', getVal: v => v.videoId || 'N/A' },
+            { id: 'col-title', name: 'Title', getVal: v => v.title || '' },
+            { id: 'col-channel', name: 'Channel', getVal: v => v.channel || 'Unknown' },
+            { id: 'col-duration', name: 'Duration', getVal: v => v.duration || '--:--' },
+            { id: 'col-views', name: 'Views', getVal: v => v.views || 'N/A' },
+            { id: 'col-uploadDate', name: 'Upload Date', getVal: v => v.uploadDate || 'N/A' },
+            { id: 'col-url', name: 'URL', getVal: v => v.url || '' }
+        ];
+
+        const activeCols = colConfig.filter(col => document.getElementById(col.id).checked);
+        
+        // Fallback if user unchecks everything
+        if (activeCols.length === 0) {
+            alert('Please select at least one column to export.');
+            return;
+        }
+
+        const headers = activeCols.map(col => col.name);
+        const rows = currentVideos.map(v => activeCols.map(col => escapeCSV(col.getVal(v))));
         
         const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

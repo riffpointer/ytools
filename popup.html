@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <title>YTools</title>
 </head>
 <body>
@@ -21,26 +22,27 @@
     <!-- Tab Navigation -->
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="scanner">SCANNER</button>
+      <button class="tab-btn" data-tab="settings">SETTINGS</button>
       <button class="tab-btn" data-tab="about">ABOUT</button>
     </div>
 
     <!-- State when not on YouTube -->
     <div id="channel-warning" class="warning-box hidden">
-      <div class="warning-icon">!</div>
+      <div class="warning-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <h2 class="warning-title">YOUTUBE NOT ACTIVE</h2>
       <p class="warning-desc">
         To extract videos, please navigate to any YouTube page (like a channel, playlist, or search results) in your active browser tab.
       </p>
-      <a href="https://www.youtube.com" target="_blank" id="btn-open-yt" class="btn btn-primary text-center">OPEN YOUTUBE</a>
+      <a href="https://www.youtube.com" target="_blank" id="btn-open-yt" class="btn btn-primary text-center"><i class="bi bi-youtube"></i> OPEN YOUTUBE</a>
     </div>
 
     <!-- Main App State -->
     <div id="status-container" class="content">
       <div id="tab-scanner" class="tab-content active">
         <div class="action-bar">
-          <button id="btn-scan" class="btn btn-primary">START SCANNING</button>
-          <button id="btn-settings" class="btn btn-icon" title="CSV Settings">&#9881;</button>
-          <button id="btn-clear" class="btn btn-secondary">CLEAR</button>
+          <button id="btn-scan" class="btn btn-primary"><i class="bi bi-play-fill"></i> START SCANNING</button>
+          <button id="btn-settings" class="btn btn-icon" title="CSV Settings"><i class="bi bi-gear-fill"></i></button>
+          <button id="btn-clear" class="btn btn-secondary" title="Clear"><i class="bi bi-trash-fill"></i></button>
         </div>
 
         <div class="list-panel">
@@ -54,6 +56,61 @@
           
           <div id="video-list" class="video-list">
             <!-- Video cards injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Tab -->
+      <div id="tab-settings" class="tab-content">
+        <div class="settings-panel">
+          <div class="settings-header">
+            <h2 class="settings-title">PREFERENCES</h2>
+          </div>
+          <div class="settings-list">
+            <div class="settings-item">
+              <div class="setting-info">
+                <div class="setting-name">Auto-Scroll Page</div>
+                <div class="setting-description">Automatically scroll down to load more videos while scanning.</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            
+            <div class="settings-item">
+              <div class="setting-info">
+                <div class="setting-name">Ignore YouTube Shorts</div>
+                <div class="setting-description">Skip videos shorter than 60 seconds.</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-item">
+              <div class="setting-info">
+                <div class="setting-name">Scan Speed Limit</div>
+                <div class="setting-description">Control how quickly the page scrolls.</div>
+              </div>
+              <select class="settings-select">
+                <option selected>Normal (Recommended)</option>
+                <option>Fast</option>
+                <option>Safe / Slow</option>
+              </select>
+            </div>
+
+            <div class="settings-item">
+              <div class="setting-info">
+                <div class="setting-name">Dark Mode Theme</div>
+                <div class="setting-description">Use professional dark gray UI layout.</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
