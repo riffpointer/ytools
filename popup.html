@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+  <title>YTools</title>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <h1 class="logo">YTools <span class="logo-badge">PRO</span></h1>
+        <div class="author">BY RIFFPOINTER</div>
+      </div>
+      <div id="scanning-indicator" class="scan-indicator hidden">
+        <div class="pulse-dot"></div>
+        <span class="scan-text">SCANNING</span>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="scanner">SCANNER</button>
+      <button class="tab-btn" data-tab="about">ABOUT</button>
+    </div>
+
+    <!-- State when not on YouTube -->
+    <div id="channel-warning" class="warning-box hidden">
+      <div class="warning-icon">!</div>
+      <h2 class="warning-title">YOUTUBE NOT ACTIVE</h2>
+      <p class="warning-desc">
+        To extract videos, please navigate to any YouTube page (like a channel, playlist, or search results) in your active browser tab.
+      </p>
+      <a href="https://www.youtube.com" target="_blank" id="btn-open-yt" class="btn btn-primary text-center">OPEN YOUTUBE</a>
+    </div>
+
+    <!-- Main App State -->
+    <div id="status-container" class="content">
+      <div id="tab-scanner" class="tab-content active">
+        <div class="action-bar">
+          <button id="btn-scan" class="btn btn-primary">START SCANNING</button>
+          <button id="btn-clear" class="btn btn-secondary">CLEAR</button>
+        </div>
+
+        <div class="list-panel">
+          <div class="list-header">
+            <span id="video-count" class="list-title">0 VIDEOS</span>
+            <div class="export-actions">
+              <button id="btn-export-csv" class="btn btn-text hidden">EXPORT CSV</button>
+              <button id="btn-copy" class="btn btn-text hidden">COPY ALL</button>
+            </div>
+          </div>
+          
+          <div id="video-list" class="video-list">
+            <!-- Video cards injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- About Tab -->
+      <div id="tab-about" class="tab-content">
+        <div class="warning-box">
+          <div class="warning-icon">PRO</div>
+          <h2 class="warning-title">YTOOLS PRO</h2>
+          <p class="warning-desc">
+            A high-performance YouTube video metadata extraction utility.<br><br>
+            Designed with flat two-tone dark gray aesthetics and Inter typography.<br><br>
+            Developed by RiffPointer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
