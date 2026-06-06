@@ -14,6 +14,7 @@ if (!window.ytoolsLoaded) {
   let activePort = null;
   let watcherInterval = null;
   let lastVideoCount = 0;
+  let clearedUrls = new Set();
 
   // Broad verification: simply check if we are on youtube.com
   const isYouTubePage = () => {
@@ -60,6 +61,7 @@ if (!window.ytoolsLoaded) {
           }
 
           if (cleanedUrl) {
+            if (clearedUrls.has(cleanedUrl)) return;
             if (!urlGroups.has(cleanedUrl)) {
               urlGroups.set(cleanedUrl, []);
             }
@@ -363,7 +365,15 @@ if (!window.ytoolsLoaded) {
     isScanning = false;
     console.log("YTools: State reset cleared.");
     if (scanTimer) clearTimeout(scanTimer);
+    
+    const currentVideos = extractVideos();
+    currentVideos.forEach(v => clearedUrls.add(v.url));
+    if (scannedVideos) {
+      scannedVideos.forEach(v => clearedUrls.add(v.url));
+    }
+    
     scannedVideos = [];
+    lastVideoCount = 0;
     notifyPopup({ type: 'SCAN_STOPPED', videos: [] });
   };
 
