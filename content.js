@@ -15,6 +15,7 @@ if (!window.ytoolsLoaded) {
   let watcherInterval = null;
   let lastVideoCount = 0;
   let clearedUrls = new Set();
+  let activeSettings = { autoScroll: true, ignoreShorts: false, scanSpeed: 1200 };
 
   // Broad verification: simply check if we are on youtube.com
   const isYouTubePage = () => {
@@ -44,6 +45,7 @@ if (!window.ytoolsLoaded) {
 
         let isWatch = href.includes('/watch?v=');
         let isShort = href.includes('/shorts/');
+        if (activeSettings.ignoreShorts && isShort) return;
         if (!isWatch && !isShort) return;
 
         try {
@@ -87,9 +89,10 @@ if (!window.ytoolsLoaded) {
         return /^\s*\d{1,2}(:\d{2})+\s*$/.test(str);
       };
 
-      // Global channel name fallback (only valid if we are on a channel page)
+      // Global channel name fallback (only valid if we are on a channel or playlist page)
       let globalChannelName = '';
       const isChannelPage = window.location.pathname.startsWith('/@') || window.location.pathname.startsWith('/channel/') || window.location.pathname.startsWith('/user/') || window.location.pathname.startsWith('/c/');
+      const isPlaylistPage = window.location.pathname.startsWith('/playlist');
       
       try {
         if (isChannelPage) {
@@ -99,6 +102,9 @@ if (!window.ytoolsLoaded) {
             const titleMatch = document.title.match(/^(.*?)\s*-\s*YouTube$/);
             if (titleMatch) globalChannelName = titleMatch[1].trim();
           }
+        } else if (isPlaylistPage) {
+          const playlistOwnerEl = document.querySelector('ytd-playlist-header-renderer #owner-container a, ytd-playlist-header-renderer #owner-name a, #playlist-header yt-formatted-string');
+          if (playlistOwnerEl) globalChannelName = safeString(playlistOwnerEl.textContent).trim();
         }
       } catch (e) {}
 
@@ -195,6 +201,15 @@ if (!window.ytoolsLoaded) {
                 }
               }
             }
+            if (!channelName) {
+              const bylineEl = container.querySelector('#byline-container, #byline, .ytd-channel-name');
+              if (bylineEl) {
+                const txt = safeString(bylineEl.textContent).replace(/\s+/g, ' ').trim();
+                if (txt && txt.length > 1) {
+                  channelName = txt;
+                }
+              }
+            }
 
             // Views & Upload Date extraction via innerText blocks
             if (!views || !uploadDate) {
@@ -276,6 +291,7 @@ if (!window.ytoolsLoaded) {
         }
 
         if (bestTitle) {
+          const isShortFlag = url.includes('/shorts/');
           videoData.push({
             title: bestTitle,
             url: url,
@@ -283,7 +299,9 @@ if (!window.ytoolsLoaded) {
             videoId: videoId || 'N/A',
             channel: channelName || 'Unknown Channel',
             views: views || 'N/A',
-            uploadDate: uploadDate || 'N/A'
+            uploadDate: uploadDate || 'N/A',
+            thumbnailUrl: videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : 'N/A',
+            videoType: isShortFlag ? 'Short' : 'Video'
           });
         }
       });
@@ -300,15 +318,17 @@ if (!window.ytoolsLoaded) {
   const scanLoop = () => {
     if (!isScanning) return;
 
-    console.log("YTools: Triggering page scroll...");
-    window.scrollTo(0, document.documentElement.scrollHeight);
-    window.scrollBy(0, 5000);
+    if (activeSettings.autoScroll) {
+      console.log("YTools: Triggering page scroll...");
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      window.scrollBy(0, 5000);
 
-    if (document.scrollingElement) {
-      document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight;
+      if (document.scrollingElement) {
+        document.scrollingElement.scrollTop = document.scrollingElement.scrollHeight;
+      }
+
+      window.dispatchEvent(new Event('scroll'));
     }
-
-    window.dispatchEvent(new Event('scroll'));
 
     scanTimer = setTimeout(() => {
       if (!isContextValid()) {
@@ -337,7 +357,7 @@ if (!window.ytoolsLoaded) {
         notifyPopup({ type: 'SCAN_UPDATE', videos: scannedVideos });
         scanLoop();
       }
-    }, 1200);
+    }, activeSettings.scanSpeed || 1200);
   };
 
   const startScanning = () => {
@@ -440,7 +460,10 @@ if (!window.ytoolsLoaded) {
             url: window.location.href
           });
         } else if (request.action === 'START_SCANNING') {
+          if (request.settings) activeSettings = request.settings;
           if (isYT) startScanning();
+        } else if (request.action === 'UPDATE_SETTINGS') {
+          if (request.settings) activeSettings = request.settings;
         } else if (request.action === 'STOP_SCANNING') {
           stopScanning();
         } else if (request.action === 'CLEAR') {

@@ -11,51 +11,97 @@
     <div class="header">
       <div class="brand">
         <h1 class="logo">YTools <span class="logo-badge">PRO</span></h1>
-        <div class="author">BY RIFFPOINTER</div>
+        <div class="author">By RiffPointer</div>
       </div>
-      <div id="scanning-indicator" class="scan-indicator hidden">
-        <div class="pulse-dot"></div>
-        <span class="scan-text">SCANNING</span>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <div id="scanning-indicator" class="scan-indicator hidden">
+          <div class="pulse-dot"></div>
+          <span class="scan-text">Scanning...</span>
+        </div>
+        <button class="btn-icon" data-tab="about" title="About" style="padding: 6px 10px; margin-bottom: 0; border-radius: var(--border-radius);">
+          <i class="bi bi-info-circle"></i>
+        </button>
       </div>
     </div>
 
     <!-- Tab Navigation -->
     <div class="tab-bar">
-      <button class="tab-btn active" data-tab="scanner">SCANNER</button>
-      <button class="tab-btn" data-tab="settings">SETTINGS</button>
-      <button class="tab-btn" data-tab="about">ABOUT</button>
-    </div>
-
-    <!-- State when not on YouTube -->
-    <div id="channel-warning" class="warning-box hidden">
-      <div class="warning-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
-      <h2 class="warning-title">YOUTUBE NOT ACTIVE</h2>
-      <p class="warning-desc">
-        To extract videos, please navigate to any YouTube page (like a channel, playlist, or search results) in your active browser tab.
-      </p>
-      <a href="https://www.youtube.com" target="_blank" id="btn-open-yt" class="btn btn-primary text-center"><i class="bi bi-youtube"></i> OPEN YOUTUBE</a>
+      <button class="tab-btn active" data-tab="scanner">Video Lister</button>
+      <button class="tab-btn" data-tab="thumbnail">Thumbnail Extractor</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
     </div>
 
     <!-- Main App State -->
     <div id="status-container" class="content">
       <div id="tab-scanner" class="tab-content active">
-        <div class="action-bar">
-          <button id="btn-scan" class="btn btn-primary"><i class="bi bi-play-fill"></i> START SCANNING</button>
-          <button id="btn-settings" class="btn btn-icon" title="CSV Settings"><i class="bi bi-gear-fill"></i></button>
-          <button id="btn-clear" class="btn btn-secondary" title="Clear"><i class="bi bi-trash-fill"></i></button>
+        <!-- State when not on YouTube -->
+        <div id="channel-warning" class="warning-box hidden">
+          <div class="warning-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <h2 class="warning-title">You're not on YouTube</h2>
+          <p class="warning-desc">
+            To extract videos, please navigate to any YouTube page (like a channel, playlist, or search results) in your active browser tab.
+          </p>
+          <a href="https://www.youtube.com" target="_blank" id="btn-open-yt" class="btn btn-primary text-center" style="height: 38px; width: fit-content; font-size: 12px;"><i class="bi bi-youtube" style="font-size: 18px;"></i> &nbsp; Go to YouTube</a>
         </div>
 
-        <div class="list-panel">
-          <div class="list-header">
-            <span id="video-count" class="list-title">0 VIDEOS</span>
-            <div class="export-actions">
-              <button id="btn-export-csv" class="btn btn-text hidden">EXPORT CSV</button>
-              <button id="btn-copy" class="btn btn-text hidden">COPY ALL</button>
+        <!-- Scanner Dashboard (visible only when on active YouTube page) -->
+        <div id="scanner-dashboard" class="scanner-dashboard">
+          <div class="list-panel">
+            <div class="action-bar">
+              <button id="btn-scan" class="btn btn-primary"><i class="bi bi-play-fill" style="font-size: 18px;"></i>&nbsp; START SCANNING</button>
+              <button id="btn-settings" class="btn btn-icon" title="CSV Settings"><i class="bi bi-gear-fill"></i></button>
+              <button id="btn-clear" class="btn btn-icon" title="Clear all"><i class="bi bi-trash-fill" style="font-size: 14px;"></i></button>
+            </div>
+
+            <div class="list-header">
+              <span id="video-count" class="list-title">0 items</span>
+              <div class="export-actions">
+                <button id="btn-export-csv" class="btn btn-text hidden">Export CSV</button>
+                <button id="btn-copy" class="btn btn-text hidden">Copy all</button>
+              </div>
+            </div>
+            
+            <div id="video-list" class="video-list empty">
+              <div class="empty-state">
+                  <div class="empty-icon"><i class="bi bi-tv"></i></div>
+                  <div class="empty-title">No videos!</div>
+                  <div class="empty-desc">Go to a YouTube channel, playlist, or search page and click "Start Scanning".</div>
+              </div>
             </div>
           </div>
-          
-          <div id="video-list" class="video-list">
-            <!-- Video cards injected here -->
+        </div>
+      </div>
+
+      <!-- Thumbnail Extractor Tab -->
+      <div id="tab-thumbnail" class="tab-content">
+        <div id="thumbnail-warning" class="warning-box hidden">
+          <div class="warning-icon"><i class="bi bi-image"></i></div>
+          <h2 id="thumbnail-warning-title" class="warning-title">Open a YouTube Watch Page</h2>
+          <p id="thumbnail-warning-desc" class="warning-desc">
+            Thumbnail extraction only works on active YouTube watch pages that use the /watch?v=... URL format.
+          </p>
+        </div>
+
+        <div id="thumbnail-dashboard" class="scanner-dashboard">
+          <div class="list-panel">
+            <div class="action-bar">
+              <button id="btn-refresh-thumbnails" class="btn btn-primary"><i class="bi bi-arrow-clockwise" style="font-size: 16px;"></i>&nbsp; REFRESH THUMBNAILS</button>
+            </div>
+
+            <div class="list-header">
+              <span id="thumbnail-count" class="list-title">0 variants</span>
+              <div class="export-actions">
+                <button id="btn-copy-thumbnail-page" class="btn btn-text hidden">Copy page URL</button>
+              </div>
+            </div>
+
+            <div id="thumbnail-list" class="video-list thumbnail-list empty">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-image"></i></div>
+                <div class="empty-title">No thumbnails yet!</div>
+                <div class="empty-desc">Open a YouTube watch page and the extractor will list the available thumbnail resolutions here.</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -63,17 +109,14 @@
       <!-- Settings Tab -->
       <div id="tab-settings" class="tab-content">
         <div class="settings-panel">
-          <div class="settings-header">
-            <h2 class="settings-title">PREFERENCES</h2>
-          </div>
-          <div class="settings-list">
+          <div class="settings-list" style="margin-top: 5px;">
             <div class="settings-item">
               <div class="setting-info">
                 <div class="setting-name">Auto-Scroll Page</div>
                 <div class="setting-description">Automatically scroll down to load more videos while scanning.</div>
               </div>
               <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" id="setting-autoscroll" checked>
                 <span class="slider"></span>
               </label>
             </div>
@@ -84,7 +127,7 @@
                 <div class="setting-description">Skip videos shorter than 60 seconds.</div>
               </div>
               <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="setting-ignore-shorts">
                 <span class="slider"></span>
               </label>
             </div>
@@ -94,10 +137,10 @@
                 <div class="setting-name">Scan Speed Limit</div>
                 <div class="setting-description">Control how quickly the page scrolls.</div>
               </div>
-              <select class="settings-select">
-                <option selected>Normal (Recommended)</option>
-                <option>Fast</option>
-                <option>Safe / Slow</option>
+              <select class="settings-select" id="setting-speed">
+                <option value="1200" selected>Normal (Recommended)</option>
+                <option value="500">Fast</option>
+                <option value="2500">Safe / Slow</option>
               </select>
             </div>
 
@@ -107,7 +150,7 @@
                 <div class="setting-description">Use professional dark gray UI layout.</div>
               </div>
               <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" id="setting-dark-mode" checked>
                 <span class="slider"></span>
               </label>
             </div>
@@ -145,6 +188,8 @@
             <label class="checkbox-label"><input type="checkbox" id="col-views" checked> Views</label>
             <label class="checkbox-label"><input type="checkbox" id="col-uploadDate" checked> Upload Date</label>
             <label class="checkbox-label"><input type="checkbox" id="col-url" checked> URL</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-thumbnailUrl" checked> Thumbnail URL</label>
+            <label class="checkbox-label"><input type="checkbox" id="col-videoType" checked> Video Type</label>
           </div>
         </div>
       </div>

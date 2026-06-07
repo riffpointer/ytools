@@ -21,6 +21,7 @@ Designed with a sleek, premium dark mode aesthetic under the specifications requ
 4. **Copy List**: Generates a clean text representation of the videos (index, title, duration, and direct URL) copied to your clipboard.
 5. **Save JSON**: Instantly downloads a clean JSON file containing arrays of `{ title, url, duration }` objects.
 6. **Direct Navigation**: Clicking any video in the extracted list opens it in a new browser tab.
+7. **Thumbnail Extractor**: Adds a dedicated watch-page tab that detects `/watch?v=...` URLs, previews the available thumbnail resolutions, and downloads each resolution directly.
 
 ---
 
@@ -43,7 +44,8 @@ Designed with a sleek, premium dark mode aesthetic under the specifications requ
 4. Click **START SCANNING**. The page will scroll down automatically, indexing videos in real-time.
 5. Click **STOP SCANNING** at any time to pause, or let it run until it reaches the end of the channel.
 6. Use **COPY LIST** or **SAVE JSON** to export your extracted catalog.
-7. Click **RESET** to clear and reload the page state.
+7. Switch to **Thumbnail Extractor** while on a YouTube watch page to preview and download all available thumbnail resolutions.
+8. Click **RESET** to clear and reload the page state.
 
 ---
 *Created by RiffPointer*

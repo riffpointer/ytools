@@ -1,11 +1,13 @@
 {
   "manifest_version": 3,
   "name": "YTools",
-  "version": "1.0",
-  "description": "Extract lists of videos from YouTube channel pages. Clean typography-driven design.",
+  "version": "1.1",
+  "description": "Extract lists of videos and thumbnail assets from YouTube pages. Clean typography-driven design.",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "downloads"
   ],
   "host_permissions": [
     "*://*.youtube.com/*"
